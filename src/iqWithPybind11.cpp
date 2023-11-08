@@ -35,7 +35,6 @@ Software version: 1.9.10
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <python.h>
 #include <pybind11/stl_bind.h>
 
 using namespace std;
