@@ -28,6 +28,8 @@ Software version: 1.9.10
 #include <utility>
 #include <exception>
 #include <stdexcept>
+#include <Eigen/Dense>
+#include <iostream>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -36,6 +38,7 @@ Software version: 1.9.10
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/numpy.h>
 
 using namespace std;
 namespace py = pybind11;
@@ -810,7 +813,7 @@ void process(const vector<string> &argv,
         omp_set_dynamic(0);
         int no_threads = 4;
         omp_set_num_threads(no_threads);
-        printf("\nUsing %llu  threads ...\n", no_threads);
+        printf("\nUsing %d  threads ...\n", no_threads);
     #else
         printf("Using a single CPU core ...\n");
     #endif
@@ -1342,204 +1345,204 @@ py::dict iq_filter(py:: str cmd) {
 
 //------------------------------ MaxLFQ -------------------------------------
 
-// using Eigen::FullPivHouseholderQR;
-// using Eigen::HouseholderQR;
-// using Eigen::MatrixXd;
-// using Eigen::VectorXd;
+using Eigen::FullPivHouseholderQR;
+using Eigen::HouseholderQR;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
-// class ion_table {
+class ion_table {
 
-//     static int full_connection;
-//     static FullPivHouseholderQR<MatrixXd> full_qr;
+    static int full_connection;
+    static FullPivHouseholderQR<MatrixXd> full_qr;
 
-// public:
-//     static void init(int N) {
-//         MatrixXd AtA = MatrixXd::Zero(N + 1, N + 1);
+public:
+    static void init(int N) {
+        MatrixXd AtA = MatrixXd::Zero(N + 1, N + 1);
 
-//         for (int j = 0; j < (N - 1); j++) {
-//             for (int k = j + 1; k < N; k++) {
-//                 AtA(j, k) = -1.0;
-//                 AtA(k, j) = -1.0;
-//                 AtA(j, j) += 1.0;
-//                 AtA(k, k) += 1.0;
-//             }
-//         }
+        for (int j = 0; j < (N - 1); j++) {
+            for (int k = j + 1; k < N; k++) {
+                AtA(j, k) = -1.0;
+                AtA(k, j) = -1.0;
+                AtA(j, j) += 1.0;
+                AtA(k, k) += 1.0;
+            }
+        }
 
-//         AtA *= 2.0;
+        AtA *= 2.0;
 
-//         for (int j = 0; j < N; j++) {
-//             AtA(j, N) = 1.0;
-//             AtA(N, j) = 1.0;
-//         }
-//         AtA(N, N) = 0.0;
+        for (int j = 0; j < N; j++) {
+            AtA(j, N) = 1.0;
+            AtA(N, j) = 1.0;
+        }
+        AtA(N, N) = 0.0;
 
-//         full_qr = FullPivHouseholderQR<MatrixXd>(AtA);
+        full_qr = FullPivHouseholderQR<MatrixXd>(AtA);
 
-//         full_connection = N * (N - 1) / 2;
-//     }
+        full_connection = N * (N - 1) / 2;
+    }
 
-//     unordered_map<int, vector<double>> map;
-//     int ncol;
+    unordered_map<int, vector<double>> map;
+    int ncol;
 
-//     ion_table(int ncol) : ncol(ncol) {
-//     }
+    ion_table(int ncol) : ncol(ncol) {
+    }
 
-//     // add an entry to a map, increase size if necessary
-//     void add_to_table(int ion, int col, double quant) {
-//         auto r = map.emplace(ion, vector<double>());
-//         if (r.second) {
-//             //n++;
-//             r.first->second.resize(ncol, NAN);
-//         }
-//         r.first->second[col] = quant;
-//     }
+    // add an entry to a map, increase size if necessary
+    void add_to_table(int ion, int col, double quant) {
+        auto r = map.emplace(ion, vector<double>());
+        if (r.second) {
+            //n++;
+            r.first->second.resize(ncol, NAN);
+        }
+        r.first->second[col] = quant;
+    }
 
-//     void spread(int *g, int i, int val) {
-//         g[i] = val;
+    void spread(int *g, int i, int val) {
+        g[i] = val;
 
-//         for (const auto &m : map) {
-//             if (!isnan(m.second[i])) {
-//                 for (int j = 0; j < ncol; j++) {
-//                     if (g[j] < 0 && !isnan(m.second[j])) {
-//                         spread(g, j, val);
-//                     }
-//                 }
-//             }
-//         }
-//     }
+        for (const auto &m : map) {
+            if (!isnan(m.second[i])) {
+                for (int j = 0; j < ncol; j++) {
+                    if (g[j] < 0 && !isnan(m.second[j])) {
+                        spread(g, j, val);
+                    }
+                }
+            }
+        }
+    }
 
-//     inline double get_median(double *median_buffer, int median_size) {
-//         sort(median_buffer, median_buffer + median_size);
-//         int mid = median_size / 2;
-//         return median_size % 2 == 0 ? (median_buffer[mid] + median_buffer[mid - 1]) / 2.0 : median_buffer[mid];
-//     }
+    inline double get_median(double *median_buffer, int median_size) {
+        sort(median_buffer, median_buffer + median_size);
+        int mid = median_size / 2;
+        return median_size % 2 == 0 ? (median_buffer[mid] + median_buffer[mid - 1]) / 2.0 : median_buffer[mid];
+    }
 
-//     void maxLFQ(double *buffer, int *g) {
-//         if (map.size() < 1) {
-//             fill_n(buffer, ncol, NAN);
-//             fill_n(g, ncol, 0);
-//             return;
-//         }
+    void maxLFQ(double *buffer, int *g) {
+        if (map.size() < 1) {
+            fill_n(buffer, ncol, NAN);
+            fill_n(g, ncol, 0);
+            return;
+        }
 
-//         if (map.size() == 1) {
-//             for (int i = 0; i < ncol; i++) {
-//                 buffer[i] = map.begin()->second[i];
-//             }
-//             fill_n(g, ncol, 0);
-//             return;
-//         }
+        if (map.size() == 1) {
+            for (int i = 0; i < ncol; i++) {
+                buffer[i] = map.begin()->second[i];
+            }
+            fill_n(g, ncol, 0);
+            return;
+        }
 
-//         double *median_buffer = new double[map.size()];
-//         int median_size = 0;
+        double *median_buffer = new double[map.size()];
+        int median_size = 0;
 
-//         fill_n(g, ncol, -1);
+        fill_n(g, ncol, -1);
 
-//         int val = 0;
-//         for (int i = 0; i < ncol; i++) {
-//             if (g[i] < 0) {
-//                 spread(g, i, val++);
-//             }
-//         }
+        int val = 0;
+        for (int i = 0; i < ncol; i++) {
+            if (g[i] < 0) {
+                spread(g, i, val++);
+            }
+        }
 
-//         fill_n(buffer, ncol, NAN);
+        fill_n(buffer, ncol, NAN);
 
-//         for (int i = 0; i < val; i++) {
-//             vector<int> ind;
-//             for (int j = 0; j < ncol; j++) {
-//                 if (g[j] == i) {
-//                     ind.push_back(j);
-//                 }
-//             }
+        for (int i = 0; i < val; i++) {
+            vector<int> ind;
+            for (int j = 0; j < ncol; j++) {
+                if (g[j] == i) {
+                    ind.push_back(j);
+                }
+            }
 
-//             if (ind.size() == 1) {
-//                 median_size = 0;
+            if (ind.size() == 1) {
+                median_size = 0;
 
-//                 for (const auto &m : map) {
-//                     if (!isnan(m.second[ind[0]])) {
-//                         median_buffer[median_size++] = m.second[ind[0]];
-//                     }
-//                 }
-//                 if (median_size == 0) {
-//                     buffer[ind[0]] = NAN;
-//                 } else {
-//                     buffer[ind[0]] = get_median(median_buffer, median_size);
-//                 }
-//             } else {
+                for (const auto &m : map) {
+                    if (!isnan(m.second[ind[0]])) {
+                        median_buffer[median_size++] = m.second[ind[0]];
+                    }
+                }
+                if (median_size == 0) {
+                    buffer[ind[0]] = NAN;
+                } else {
+                    buffer[ind[0]] = get_median(median_buffer, median_size);
+                }
+            } else {
 
-//                 int N = ind.size();
+                int N = ind.size();
 
-//                 MatrixXd AtA = MatrixXd::Zero(N + 1, N + 1);
-//                 VectorXd Atb = VectorXd::Zero(N + 1);
+                MatrixXd AtA = MatrixXd::Zero(N + 1, N + 1);
+                VectorXd Atb = VectorXd::Zero(N + 1);
 
-//                 int n_connection = 0;
+                int n_connection = 0;
 
-//                 for (int j = 0; j < (N - 1); j++) {
-//                     for (int k = j + 1; k < N; k++) {
-//                         median_size = 0;
-//                         for (const auto &m : map) {
-//                             if (!isnan(m.second[ind[j]]) && !isnan(m.second[ind[k]])) {
-//                                 median_buffer[median_size++] = m.second[ind[k]] - m.second[ind[j]];
-//                             }
-//                         }
-//                         if (median_size > 0) {
-//                             n_connection++;
+                for (int j = 0; j < (N - 1); j++) {
+                    for (int k = j + 1; k < N; k++) {
+                        median_size = 0;
+                        for (const auto &m : map) {
+                            if (!isnan(m.second[ind[j]]) && !isnan(m.second[ind[k]])) {
+                                median_buffer[median_size++] = m.second[ind[k]] - m.second[ind[j]];
+                            }
+                        }
+                        if (median_size > 0) {
+                            n_connection++;
 
-//                             double r_i_j = get_median(median_buffer, median_size);
-//                             AtA(j, k) = -1.0;
-//                             AtA(k, j) = -1.0;
+                            double r_i_j = get_median(median_buffer, median_size);
+                            AtA(j, k) = -1.0;
+                            AtA(k, j) = -1.0;
 
-//                             AtA(j, j) += 1.0;
-//                             AtA(k, k) += 1.0;
+                            AtA(j, j) += 1.0;
+                            AtA(k, k) += 1.0;
 
-//                             Atb(j) -= r_i_j;
-//                             Atb(k) += r_i_j;
-//                         }
-//                     }
-//                 }
+                            Atb(j) -= r_i_j;
+                            Atb(k) += r_i_j;
+                        }
+                    }
+                }
 
-//                 AtA *= 2.0;
-//                 Atb *= 2.0;
+                AtA *= 2.0;
+                Atb *= 2.0;
 
-//                 for (int j = 0; j < N; j++) {
-//                     AtA(j, N) = 1.0;
-//                     AtA(N, j) = 1.0;
-//                 }
-//                 AtA(N, N) = 0.0;
+                for (int j = 0; j < N; j++) {
+                    AtA(j, N) = 1.0;
+                    AtA(N, j) = 1.0;
+                }
+                AtA(N, N) = 0.0;
 
-//                 // mean data
-//                 double sum = 0.0;
-//                 int count = 0;
-//                 for (const auto &m : map) {
-//                     for (const auto &s : ind) {
-//                         if (!isnan(m.second[s])) {
-//                             sum += m.second[s];
-//                             count++;
-//                         }
-//                     }
-//                 }
-//                 Atb(N) = sum * (double)N / (double)count;
+                // mean data
+                double sum = 0.0;
+                int count = 0;
+                for (const auto &m : map) {
+                    for (const auto &s : ind) {
+                        if (!isnan(m.second[s])) {
+                            sum += m.second[s];
+                            count++;
+                        }
+                    }
+                }
+                Atb(N) = sum * (double)N / (double)count;
 
-//                 if (n_connection == full_connection) {
-//                     VectorXd x = full_qr.solve(Atb);
-//                     for (int j = 0; j < N; j++) {
-//                         buffer[ind[j]] = x(j);
-//                     }
-//                 } else {
-//                     FullPivHouseholderQR<MatrixXd> qr(AtA);
-//                     VectorXd x = qr.solve(Atb);
-//                     for (int j = 0; j < N; j++) {
-//                         buffer[ind[j]] = x(j);
-//                     }
-//                 }
-//             }
-//         }
+                if (n_connection == full_connection) {
+                    VectorXd x = full_qr.solve(Atb);
+                    for (int j = 0; j < N; j++) {
+                        buffer[ind[j]] = x(j);
+                    }
+                } else {
+                    FullPivHouseholderQR<MatrixXd> qr(AtA);
+                    VectorXd x = qr.solve(Atb);
+                    for (int j = 0; j < N; j++) {
+                        buffer[ind[j]] = x(j);
+                    }
+                }
+            }
+        }
 
-//         delete[] median_buffer;
-//     }
-// };
+        delete[] median_buffer;
+    }
+};
 
-// int ion_table::full_connection;
-// FullPivHouseholderQR<MatrixXd> ion_table::full_qr;
+int ion_table::full_connection;
+FullPivHouseholderQR<MatrixXd> ion_table::full_qr;
 
 // [[Rcpp::export]]
 /*
@@ -1556,13 +1559,39 @@ SEXP get_list_element(SEXP list, const char *str) {
 }
 */
 
-py::object get_list_element(py::dict list, const char *str) {
+// std::vector<int>  get_list_element(py::dict list, const char *str) {
+//     if (list.contains(str)) {
+//         if(strcmp(str, "quant") != 0){
+//             std::vector<int> data = list.attr(str).cast<std::vector<int>>();
+//             return data;
+//         }else{
+//             std::vector<double> data = list.attr(str).cast<std::vector<double>>();
+//             return data;
+//         }
+//     } else {
+//         throw std::runtime_error(std::string("Cannot find list element: ") + str);
+//     }
+// }
+
+std::vector<int> get_list_element_int(py::dict list, const char *str) {
     if (list.contains(str)) {
-        return list[str];
+        std::vector<int> data = list.attr(str).cast<std::vector<int>>();
+        return data;
     } else {
         throw std::runtime_error(std::string("Cannot find list element: ") + str);
     }
 }
+
+std::vector<double> get_list_element_double(py::dict list, const char *str) {
+    if (list.contains(str)) {
+        std::vector<double> data = list.attr(str).cast<std::vector<double>>();
+        return data;
+    } else {
+        throw std::runtime_error(std::string("Cannot find list element: ") + str);
+    }
+}
+
+
 
 /*
 static void tp_user(void *dummy) {
@@ -1576,26 +1605,34 @@ int tp_check() {
 
 */
 
-// static void tp_user(void *dummy) {
-//     // In the Pybind11 context, you can check for user interrupt using PyErr_CheckSignals()
-//     // This function checks for Ctrl+C (KeyboardInterrupt) or other signals to interrupt execution.
-//     PyErr_CheckSignals();
-// }
+static void tp_user() {
+    // In the Pybind11 context, you can check for user interrupt using PyErr_CheckSignals()
+    // This function checks for Ctrl+C (KeyboardInterrupt) or other signals to interrupt execution.
+    if (PyErr_CheckSignals() != 0) {
+        throw py::error_already_set();
+    }
+}
 
-// int tp_check() {
-//     // In Pybind11, you can use Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS to execute code
-//     // in the Python context, allowing user interrupts.
-//     Py_BEGIN_ALLOW_THREADS
-//     R_ToplevelExec(tp_user, NULL);
-//     Py_END_ALLOW_THREADS
+int tp_check() {
+    // In Pybind11, you can use Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS to execute code
+    // in the Python context, allowing user interrupts.
+    Py_BEGIN_ALLOW_THREADS
+    try {
+        tp_user();
+    } catch (py::error_already_set &e) {
+        // Handle the exception
+        Py_BLOCK_THREADS
+        return 1;
+    }
+    Py_END_ALLOW_THREADS
 
-//     // The return value here can be adapted according to your needs.
-//     // In this example, we return 0 if there's no interrupt and 1 if there's an interrupt.
-//     return PyErr_CheckSignals() ? 1 : 0;
-// }
+    // The return value here can be adapted according to your needs.
+    // In this example, we return 0 if there's no interrupt and 1 if there's an interrupt.
+    return PyErr_CheckSignals() != 0 ? 1 : 0;
+}
 
-/*
-SEXP iq_MaxLFQ(py::dict list) {
+
+py::dict iq_MaxLFQ(py::dict list) {
 
     int stop_sig = 0;
 
@@ -1604,18 +1641,32 @@ SEXP iq_MaxLFQ(py::dict list) {
     int* samples;
     double* quants;
 
+    std::vector<int> proteins_vector;
+    std::vector<int> ions_vector;
+    std::vector<int> samples_vector;
+    std::vector<double> quants_vector;
+
     try {
-        proteins = get_list_element(list, "protein_index").cast<int>();
-        ions = get_list_element(list, "ion_index").cast<int>();
-        samples = get_list_element(list, "sample_index").cast<int>();
-        quants = get_list_element(list, "quant").cast<double>();
+        proteins_vector = get_list_element_int(list, "protein_index");
+        proteins = proteins_vector.data();
+        ions_vector = get_list_element_int(list, "ion_index");
+        ions = ions_vector.data();
+        samples_vector = get_list_element_int(list, "sample_index");
+        samples = samples_vector.data();
+        quants_vector = get_list_element_double(list, "quant");
+        quants = quants_vector.data();
+        // proteins = list.attr("protein_index").cast<int>();
+        // ions = list.attr("ion_index").cast<int>();
+        // samples = list.attr("sample_index").cast<int>();
+        // quants = list.attr("quant").cast<double>();
+
     }
     catch (exception & e) {
         printf("%s\n", e.what());
         return (py::none());
     }
 
-    size_t nrow = proteins.size()
+    size_t nrow = proteins_vector.size();
 
     int n_proteins = utils::count_unique(proteins, nrow);
     int n_samples = utils::count_unique(samples, nrow);
@@ -1625,12 +1676,15 @@ SEXP iq_MaxLFQ(py::dict list) {
     // SEXP table = PROTECT(Rf_allocMatrix(REALSXP, n_proteins, n_samples));
     // double* buffer = REAL(table);
 
+    py::array_t<double> table = py::array_t<double>({n_proteins, n_samples}, {n_samples, 1});
+    // double* buffer = static_cast<double*>(table.request().buffer);
+    double* buffer = table.mutable_data();
 
     auto group_annotation = new vector<string>(n_proteins, "");
     int* row_names = new int[n_proteins];
     int* col_names = new int[n_samples];
 
-    printf("nrow = %llu , # proteins = %llu , # samples = %llu \n", nrow, n_proteins, n_samples);
+    printf("nrow = %llu, # proteins = %d , # samples = %d \n", nrow, n_proteins, n_samples);
 
     //auto protein_index = new vector< vector<int> >(n_proteins);
     auto protein_index = new vector<vector<int>>(*(std::max_element(proteins, proteins + nrow)));  // allowing for missing proteins
@@ -1686,7 +1740,7 @@ SEXP iq_MaxLFQ(py::dict list) {
 
         omp_set_num_threads(no_threads);
 
-        printf("Using %llu  threads...\n", no_threads);
+        printf("Using %d  threads...\n", no_threads);
 
     #else
 
@@ -1757,7 +1811,8 @@ SEXP iq_MaxLFQ(py::dict list) {
             for (int j = 0; j < n_samples; j++) {  // byrow = TRUE
                 size_t k = j * n_proteins + map_back[i];
                 if (isnan(w[j])) {
-                    buffer[k] = NA_REAL;
+                    // buffer[k] = NA_REAL;
+                    buffer[k] = py::float_(std::numeric_limits<double>::quiet_NaN());
                 } else {
                     buffer[k] = w[j];
                 }
@@ -1770,8 +1825,9 @@ SEXP iq_MaxLFQ(py::dict list) {
 
         if (thread_id == 0) {
             if (i > thres_display) {
-                printf("%llu %%\n", i * 100 / (*protein_index).size());
-                R_FlushConsole();
+                printf("%zu %%\n", i * 100 / (*protein_index).size());
+                // R_FlushConsole();
+                std::cout.flush();
                 thres_display = i + (*protein_index).size() / 20;
             }
 
@@ -1824,29 +1880,41 @@ SEXP iq_MaxLFQ(py::dict list) {
     // SET_VECTOR_ELT(dimnames, 0, r_names);
     // SET_VECTOR_ELT(dimnames, 1, c_names);
     // Rf_setAttrib(table, R_DimNamesSymbol, dimnames);
+    py::object pd = py::module::import("pandas");
 
+    // Create a DataFrame
+    py::object df = pd.attr("DataFrame")(table);
+        // Set column names
+    df.attr("columns") = py::make_tuple(c_names);
 
-    py::list dimnames;
-    dimnames.append(r_names)
-    dimnames.append(c_names)
-
+    // Set row names
+    df.attr("index") = py::make_tuple(r_names);
 
     // annotation
-    SEXP ann = PROTECT(Rf_allocVector(STRSXP, n_proteins));
+    // SEXP ann = PROTECT(Rf_allocVector(STRSXP, n_proteins));
+    // for (int i = 0; i < n_proteins; i++) {
+    //     SET_STRING_ELT(ann, i, Rf_mkChar(group_annotation->at(i).c_str()));
+    // }
+    py::list ann(n_proteins);
     for (int i = 0; i < n_proteins; i++) {
-        SET_STRING_ELT(ann, i, Rf_mkChar(group_annotation->at(i).c_str()));
+        ann[i] = group_annotation->at(i);
     }
 
+
     // return list
-    SEXP vec = PROTECT(Rf_allocVector(VECSXP, 2));
-    SET_VECTOR_ELT(vec, 0, table);
-    SET_VECTOR_ELT(vec, 1, ann);
+    // SEXP vec = PROTECT(Rf_allocVector(VECSXP, 2));
+    // SET_VECTOR_ELT(vec, 0, df);
+    // SET_VECTOR_ELT(vec, 1, ann);
 
-    SEXP names = PROTECT(Rf_allocVector(STRSXP, 2));
-    SET_STRING_ELT(names, 0, Rf_mkChar("estimate"));
-    SET_STRING_ELT(names, 1, Rf_mkChar("annotation"));
+    // SEXP names = PROTECT(Rf_allocVector(STRSXP, 2));
+    // SET_STRING_ELT(names, 0, Rf_mkChar("estimate"));
+    // SET_STRING_ELT(names, 1, Rf_mkChar("annotation"));
 
-    Rf_setAttrib(vec, R_NamesSymbol, names);
+    // Rf_setAttrib(vec, R_NamesSymbol, names);
+
+    py::dict vec;
+    vec["estimate"] = df;
+    vec["annotation"] = ann;
 
     printf("Completed.\n");
 
@@ -1860,10 +1928,11 @@ SEXP iq_MaxLFQ(py::dict list) {
     return (vec);
 }
 
-*/
+
 
 
 PYBIND11_MODULE(iq_test, m) {
-    m.def("get_list_element", &get_list_element, "A function which copies a C++ vector into a Python list");
+    // m.def("get_list_element", &get_list_element, "A function which copies a C++ vector into a Python list");
     m.def("iq_filter", &iq_filter, "A function which copies a C++ vector into a Python list");
+    m.def("iq_maxLFQ", &iq_MaxLFQ, "A function which copies a C++ vector into a Python list");
 }
