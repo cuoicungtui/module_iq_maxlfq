@@ -1573,9 +1573,9 @@ SEXP get_list_element(SEXP list, const char *str) {
 //     }
 // }
 
-std::vector<std::string> get_list_element_int(py::dict list, const char *str) {
+std::vector<int> get_list_element_int(py::dict list, const char *str) {
     if (list.contains(str)) {
-        std::vector<std::string> data = list.attr(str).cast<std::vector<std::string>>();
+        std::vector<int> data = list.attr(str).cast<std::vector<int>>();
         return data;
     } else {
         throw std::runtime_error(std::string("Cannot find list element: ") + str);
