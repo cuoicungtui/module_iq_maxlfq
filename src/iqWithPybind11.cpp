@@ -1648,7 +1648,6 @@ py::dict iq_MaxLFQ(py::dict list) {
     std::vector<double> quants_vector;
 
     try {
-        printf("Start readed data list completed.\n");
         proteins_vector = py::cast<std::vector<int>>(list["protein_index"]);
         ions_vector = py::cast<std::vector<int>>(list["ion_index"]);
         samples_vector = py::cast<std::vector<int>>(list["sample_index"]);
@@ -1659,7 +1658,6 @@ py::dict iq_MaxLFQ(py::dict list) {
         samples = samples_vector.data();
         quants = quants_vector.data();
 
-        printf("Readed data list completed.\n");
     }
     catch (exception & e) {      
         printf("%s\n", e.what());
@@ -1762,7 +1760,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     // CHECK DONE
     py:: dict result;
     result["status"] = "_OPENMP success";
-    resule["nrow"] = nrow;
+    result["nrow"] = nrow;
     result["n_proteins"] = n_proteins;
     return (result);
 
