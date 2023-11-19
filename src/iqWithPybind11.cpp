@@ -1762,6 +1762,8 @@ py::dict iq_MaxLFQ(py::dict list) {
     // CHECK DONE
     py:: dict result;
     result["status"] = "_OPENMP success";
+    resule["nrow"] = nrow;
+    result["n_proteins"] = n_proteins;
     return (result);
 
     #pragma omp parallel for schedule(dynamic)
