@@ -1763,6 +1763,11 @@ py::dict iq_MaxLFQ(py::dict list) {
             continue;
         }
 
+        // CHECK DONE
+        py:: dict result;
+        result["status"] = "stop_sig in for  success";
+        return (result);
+
         int thread_id = 0;
 
         #ifdef _OPENMP
