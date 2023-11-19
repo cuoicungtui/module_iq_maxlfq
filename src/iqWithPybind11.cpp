@@ -1637,10 +1637,10 @@ py::dict iq_MaxLFQ(py::dict list) {
     printf("Start MaxLFQ...\n");
     int stop_sig = 0;
 
-    int* proteins;
-    int* ions;
-    int* samples;
-    double* quants;
+    int* proteins = nullptr;
+    int* ions = nullptr;
+    int* samples = nullptr;
+    double* quants = nullptr;
 
     std::vector<int> proteins_vector;
     std::vector<int> ions_vector;
