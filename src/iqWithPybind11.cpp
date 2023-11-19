@@ -1634,6 +1634,7 @@ int tp_check() {
 
 py::dict iq_MaxLFQ(py::dict list) {
 
+    printf("Start MaxLFQ...\n");
     int stop_sig = 0;
 
     int* proteins;
@@ -1647,7 +1648,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     std::vector<double> quants_vector;
 
     try {
-        
+        printf("Start readed data list completed.\n");
         proteins_vector = py::cast<std::vector<int>>(list["protein_index"]);
         ions_vector = py::cast<std::vector<int>>(list["ion_index"]);
         samples_vector = py::cast<std::vector<int>>(list["sample_index"]);
