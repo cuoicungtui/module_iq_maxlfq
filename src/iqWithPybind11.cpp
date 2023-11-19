@@ -1873,6 +1873,8 @@ py::dict iq_MaxLFQ(py::dict list) {
 
         // DONE
     }
+    py::print("Thread done.\n");
+
 
 
     if (stop_sig) {
