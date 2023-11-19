@@ -1834,9 +1834,7 @@ py::dict iq_MaxLFQ(py::dict list) {
             delete tab;
         }
 
-        py:: dict result;
-        result["status"] = "stop_sig in for  success";
-        return (result);
+        // Done
 
         if (thread_id == 0) {
             if (i > thres_display) {
@@ -1855,6 +1853,9 @@ py::dict iq_MaxLFQ(py::dict list) {
             }
         }
 
+        py:: dict result;
+        result["status"] = "thread in for  success";
+        return (result);
     }
 
 
