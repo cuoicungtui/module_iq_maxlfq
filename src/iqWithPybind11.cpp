@@ -1731,9 +1731,11 @@ py::dict iq_MaxLFQ(py::dict list) {
         }
     }
 
-    py:: dict result;
-    result["status"] = "before Thead success";
-    return (result);
+
+    // CHECK DONE
+    // py:: dict result;
+    // result["status"] = "before Thead success";
+    // return (result);
 
     size_t thres_display = 0;
 
@@ -1866,6 +1868,11 @@ py::dict iq_MaxLFQ(py::dict list) {
     // for (int i = 0; i < n_proteins; i++) {
     //     SET_STRING_ELT(r_names, i, Rf_mkChar(to_string(row_names[i]).c_str()));
     // }
+
+        // CHECK DONE
+    py:: dict result;
+    result["status"] = "after Thead success";
+    return (result);
 
     py::list r_names(n_proteins);
     for (int i = 0; i < n_proteins; i++) {
