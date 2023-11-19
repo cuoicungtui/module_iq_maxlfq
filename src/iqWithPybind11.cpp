@@ -1750,7 +1750,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     #endif
 
-    CHECK DONE
+    // CHECK DONE
     py:: dict result;
     result["status"] = "_OPENMP success";
     result["nrow"] = nrow;
