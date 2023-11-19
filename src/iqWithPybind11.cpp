@@ -1759,6 +1759,11 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     #endif
 
+    // CHECK DONE
+    py:: dict result;
+    result["status"] = "_OPENMP success";
+    return (result);
+
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < (*protein_index).size(); i++) {
         if (stop_sig) {
@@ -1869,10 +1874,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     //     SET_STRING_ELT(r_names, i, Rf_mkChar(to_string(row_names[i]).c_str()));
     // }
 
-        // CHECK DONE
-    py:: dict result;
-    result["status"] = "after Thead success";
-    return (result);
+
 
     py::list r_names(n_proteins);
     for (int i = 0; i < n_proteins; i++) {
