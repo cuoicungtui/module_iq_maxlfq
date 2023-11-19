@@ -1917,6 +1917,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     }
 
     py::print("write c_name Done.\n");
+     py::print(c_names,"\n");
 
     // //SEXP dimnames = getAttrib(ann, R_DimNamesSymbol);
     // SEXP dimnames = PROTECT(Rf_allocVector(VECSXP, 2));
