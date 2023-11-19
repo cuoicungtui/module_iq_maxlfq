@@ -1666,6 +1666,10 @@ py::dict iq_MaxLFQ(py::dict list) {
         return (py::none());
     }
 
+    py:: dict result;
+    result["status"] = "Read data list success";
+    return (result);
+
     size_t nrow = proteins_vector.size();
 
     int n_proteins = utils::count_unique(proteins, nrow);
