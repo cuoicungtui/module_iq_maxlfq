@@ -30,7 +30,7 @@ Software version: 1.9.10
 #include <stdexcept>
 #include <Eigen/Dense>
 #include <iostream>
-
+#include <csignal>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -1350,6 +1350,10 @@ using Eigen::HouseholderQR;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+// Global variables
+volatile sig_atomic_t stop_signal = 0;
+
+
 class ion_table {
 
     static int full_connection;
@@ -1593,44 +1597,43 @@ std::vector<double> get_list_element_double(py::dict list, const char *str) {
 
 
 
-/*
-static void tp_user(void *dummy) {
-    R_CheckUserInterrupt();
-}
+// static void tp_user() {
+//     // In the Pybind11 context, you can check for user interrupt using PyErr_CheckSignals()
+//     // This function checks for Ctrl+C (KeyboardInterrupt) or other signals to interrupt execution.
+//     if (PyErr_CheckSignals() != 0) {
+//         throw py::error_already_set();
+//     }
+// }
 
-// call the above in a top-level context
-int tp_check() {
-    return (R_ToplevelExec(tp_user, NULL) == FALSE);
-}
+// int tp_check() {
+//     // In Pybind11, you can use Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS to execute code
+//     // in the Python context, allowing user interrupts.
+//     Py_BEGIN_ALLOW_THREADS
+//     try {
+//         tp_user();
+//     } catch (py::error_already_set &e) {
+//         // Handle the exception
+//         Py_BLOCK_THREADS
+//         return 1;
+//     }
+//     Py_END_ALLOW_THREADS
 
-*/
+//     // The return value here can be adapted according to your needs.
+//     // In this example, we return 0 if there's no interrupt and 1 if there's an interrupt.
+//     return PyErr_CheckSignals() != 0 ? 1 : 0;
+// }
 
-static void tp_user() {
-    // In the Pybind11 context, you can check for user interrupt using PyErr_CheckSignals()
-    // This function checks for Ctrl+C (KeyboardInterrupt) or other signals to interrupt execution.
-    if (PyErr_CheckSignals() != 0) {
-        throw py::error_already_set();
+// Signal handler to catch interrupts
+void signal_handler(int signum) {
+    if (signum == SIGINT) {
+        stop_signal = 1;
     }
 }
 
-int tp_check() {
-    // In Pybind11, you can use Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS to execute code
-    // in the Python context, allowing user interrupts.
-    Py_BEGIN_ALLOW_THREADS
-    try {
-        tp_user();
-    } catch (py::error_already_set &e) {
-        // Handle the exception
-        Py_BLOCK_THREADS
-        return 1;
-    }
-    Py_END_ALLOW_THREADS
-
-    // The return value here can be adapted according to your needs.
-    // In this example, we return 0 if there's no interrupt and 1 if there's an interrupt.
-    return PyErr_CheckSignals() != 0 ? 1 : 0;
+// Check for user interruption
+bool check_interrupt() {
+    return stop_signal != 0;
 }
-
 
 py::dict iq_MaxLFQ(py::dict list) {
 
@@ -1728,6 +1731,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     // result["status"] = "before Thead success";
     // return (result);
 
+    std::signal(SIGINT, signal_handler);
     size_t thres_display = 0;
 
     #ifdef _OPENMP
@@ -1762,9 +1766,7 @@ py::dict iq_MaxLFQ(py::dict list) {
         if (stop_sig) {
             continue;
         }
-
         // CHECK DONE
-
         int thread_id = 0;
 
         #ifdef _OPENMP
@@ -1835,13 +1837,12 @@ py::dict iq_MaxLFQ(py::dict list) {
         }
 
         // Done
-
+        /*
         if (thread_id == 0) {
             if (i > thres_display) {
                 py::print("%zu %%\n", i * 100 / (*protein_index).size());
                 // Import sys module from Python
-                py::module sys = py::module::import("sys");
-
+                py::module sys = py::module::import("sys");     
                 // Access sys.stdout and call flush method
                 sys.attr("stdout").attr("flush")();
                 thres_display = i + (*protein_index).size() / 20;
@@ -1850,6 +1851,22 @@ py::dict iq_MaxLFQ(py::dict list) {
             if (tp_check()) {  // user interrupted ...
                 stop_sig = 1;
                 #pragma omp flush(stop_sig)
+            }
+        }
+        */    
+        if (thread_id == 0) {
+            if (i > thres_display) {
+                py::print("%d%%\n", i * 100 / (*protein_index).size());
+                // Import sys module from Python
+                py::module sys = py::module::import("sys");
+                // Access sys.stdout and call flush method
+                sys.attr("stdout").attr("flush")();
+                thres_display = i + (*protein_index).size() / 20;
+            }
+
+            if (check_interrupt()) {  // user interrupted ...
+                stop_signal = 1;
+                #pragma omp flush(stop_signal)
             }
         }
 
