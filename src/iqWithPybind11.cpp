@@ -1917,7 +1917,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     }
 
     py::print("write c_name Done.\n");
-     py::print(c_names,"\n");
+    py::print(c_names,"\n");
 
     // //SEXP dimnames = getAttrib(ann, R_DimNamesSymbol);
     // SEXP dimnames = PROTECT(Rf_allocVector(VECSXP, 2));
@@ -1931,10 +1931,14 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     // Set column names
     py::print("Check 1.\n");
-    df.attr("columns") = py::make_tuple(c_names.begin(), c_names.end());
+    // df.attr("columns") = py::make_tuple(c_names.begin(), c_names.end());
+    df.attr("columns") = py::tuple(py::stl_input_iterator<std::string>(c_names.begin()),
+                                   py::stl_input_iterator<std::string>(c_names.end()));
     py::print("Check 2.\n");
     // Set row names
-    df.attr("index") = py::make_tuple(r_names.begin(), r_names.end());
+    // df.attr("index") = py::make_tuple(r_names.begin(), r_names.end());
+    df.attr("index") = py::tuple(py::stl_input_iterator<std::string>(r_names.begin()),
+                                   py::stl_input_iterator<std::string>(r_names.end()));
     py::print("Check 3.\n");
     // annotation
     // SEXP ann = PROTECT(Rf_allocVector(STRSXP, n_proteins));
