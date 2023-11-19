@@ -1642,21 +1642,14 @@ py::dict iq_MaxLFQ(py::dict list) {
     int* samples = nullptr;
     double* quants = nullptr;
 
-    std::vector<int> proteins_vector;
-    std::vector<int> ions_vector;
-    std::vector<int> samples_vector;
-    std::vector<double> quants_vector;
+    std::vector<int> proteins_index;
 
     try {
-        proteins_vector = py::cast<std::vector<int>>(list["protein_index"]);
-        ions_vector = py::cast<std::vector<int>>(list["ion_index"]);
-        samples_vector = py::cast<std::vector<int>>(list["sample_index"]);
-        quants_vector = py::cast<std::vector<double>>(list["quant"]);
-
-        proteins = proteins_vector.data();
-        ions = ions_vector.data();
-        samples = samples_vector.data();
-        quants = quants_vector.data();
+        proteins_index = py::cast<std::vector<int>>(list["protein_index"]);
+        proteins = proteins_index.data();
+        ions = py::cast<std::vector<int>>(list["ion_index"]).data();
+        samples = py::cast<std::vector<int>>(list["sample_index"]).data();
+        quants = py::cast<std::vector<double>>(list["quant"]).data();
 
     }
     catch (exception & e) {      
@@ -1669,7 +1662,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     // result["status"] = "Read data list success";
     // return (result);
 
-    size_t nrow = proteins_vector.size();
+    size_t nrow = proteins_index.size();
 
     int n_proteins = utils::count_unique(proteins, nrow);
     int n_samples = utils::count_unique(samples, nrow);
