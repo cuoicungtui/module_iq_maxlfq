@@ -1904,7 +1904,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     for (int i = 0; i < n_proteins; i++) {
         r_names[i] = to_string(row_names[i]);
     }
-
+    py::print("write R_name Done.\n");
 
     // SEXP c_names = PROTECT(Rf_allocVector(STRSXP, n_samples));
     // for (int i = 0; i < n_samples; i++) {
@@ -1916,6 +1916,7 @@ py::dict iq_MaxLFQ(py::dict list) {
         c_names[i] = to_string(col_names[i]);
     }
 
+    py::print("write c_name Done.\n");
 
     // //SEXP dimnames = getAttrib(ann, R_DimNamesSymbol);
     // SEXP dimnames = PROTECT(Rf_allocVector(VECSXP, 2));
@@ -1942,7 +1943,7 @@ py::dict iq_MaxLFQ(py::dict list) {
         ann[i] = group_annotation->at(i);
     }
 
-
+    py::print("write DataFrame Done.\n");
     // return list
     // SEXP vec = PROTECT(Rf_allocVector(VECSXP, 2));
     // SET_VECTOR_ELT(vec, 0, df);
