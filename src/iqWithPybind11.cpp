@@ -1638,7 +1638,7 @@ bool check_interrupt() {
 py::dict iq_MaxLFQ(py::dict list) {
 
     py::print("Start MaxLFQ...\n");
-    int stop_sig = 0;
+    // int stop_sig = 0;
 
     int* proteins = nullptr;
     int* ions = nullptr;
@@ -1764,7 +1764,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < (*protein_index).size(); i++) {
-        if (stop_sig) {
+        if (stop_signal) {
             continue;
         }
         // CHECK DONE
@@ -1877,7 +1877,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
 
 
-    if (stop_sig) {
+    if (stop_signal) {
         py::print("Canceled.\n");
 
         // UNPROTECT(1);
@@ -1887,7 +1887,7 @@ py::dict iq_MaxLFQ(py::dict list) {
         delete[] col_names;
         delete[] row_names;
 
-        return (py::none());
+       return (py::none());
     }
 
     // estimate names
