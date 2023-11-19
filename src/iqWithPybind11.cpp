@@ -1930,6 +1930,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     py::print("Check 1.\n");
         // Set column names
+    py::print(c_names,"\n");
     df.attr("columns") = py::make_tuple(c_names);
     py::print("Check 2.\n");
     // Set row names
