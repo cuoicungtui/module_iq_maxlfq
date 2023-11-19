@@ -1634,7 +1634,7 @@ int tp_check() {
 
 py::dict iq_MaxLFQ(py::dict list) {
 
-    printf("Start MaxLFQ...\n");
+    py::print("Start MaxLFQ...\n");
     int stop_sig = 0;
 
     int* proteins = nullptr;
@@ -1750,12 +1750,12 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     #endif
 
-    // CHECK DONE
-    // py:: dict result;
-    // result["status"] = "_OPENMP success";
-    // result["nrow"] = nrow;
-    // result["n_proteins"] = (*protein_index).size();
-    // return (result);
+    CHECK DONE
+    py:: dict result;
+    result["status"] = "_OPENMP success";
+    result["nrow"] = nrow;
+    result["n_proteins"] = (*protein_index).size();
+    return (result);
 
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < (*protein_index).size(); i++) {
@@ -1836,7 +1836,7 @@ py::dict iq_MaxLFQ(py::dict list) {
             if (i > thres_display) {
                 printf("%zu %%\n", i * 100 / (*protein_index).size());
                 // R_FlushConsole();
-                std::cout.flush();
+                py::print(std::flush);
                 thres_display = i + (*protein_index).size() / 20;
             }
 
@@ -1846,14 +1846,8 @@ py::dict iq_MaxLFQ(py::dict list) {
             }
         }
 
-
-
     }
 
-    // CHECK DONE
-    py:: dict result;
-    result["status"] = "pragma success";
-    return (result);
 
     if (stop_sig) {
         printf("Canceled.\n");
