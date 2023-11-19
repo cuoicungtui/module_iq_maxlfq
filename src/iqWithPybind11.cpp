@@ -1641,24 +1641,12 @@ py::dict iq_MaxLFQ(py::dict list) {
     int* samples;
     double* quants;
 
-    std::vector<int> proteins_vector;
-    std::vector<int> ions_vector;
-    std::vector<int> samples_vector;
-    std::vector<double> quants_vector;
-
     try {
-        proteins_vector = get_list_element_int(list, "protein_index");
-        proteins = proteins_vector.data();
-        ions_vector = get_list_element_int(list, "ion_index");
-        ions = ions_vector.data();
-        samples_vector = get_list_element_int(list, "sample_index");
-        samples = samples_vector.data();
-        quants_vector = get_list_element_double(list, "quant");
-        quants = quants_vector.data();
-        // proteins = list.attr("protein_index").cast<int>();
-        // ions = list.attr("ion_index").cast<int>();
-        // samples = list.attr("sample_index").cast<int>();
-        // quants = list.attr("quant").cast<double>();
+
+        proteins = list.attr("protein_index").cast<int>();
+        ions = list.attr("ion_index").cast<int>();
+        samples = list.attr("sample_index").cast<int>();
+        quants = list.attr("quant").cast<double>();
 
     }
     catch (exception & e) {      
