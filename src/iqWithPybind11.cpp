@@ -1928,13 +1928,12 @@ py::dict iq_MaxLFQ(py::dict list) {
     // Create a DataFrame
     py::object df = pd.attr("DataFrame")(table);
 
+    // Set column names
     py::print("Check 1.\n");
-        // Set column names
-    py::print(c_names,"\n");
-    df.attr("columns") = py::make_tuple(c_names);
+    df.attr("columns") = py::make_tuple(c_names.begin(), c_names.end());
     py::print("Check 2.\n");
     // Set row names
-    df.attr("index") = py::make_tuple(r_names);
+    df.attr("index") = py::make_tuple(r_names.begin(), r_names.end());
     py::print("Check 3.\n");
     // annotation
     // SEXP ann = PROTECT(Rf_allocVector(STRSXP, n_proteins));
