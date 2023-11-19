@@ -1859,9 +1859,9 @@ py::dict iq_MaxLFQ(py::dict list) {
             if (i > thres_display) {
                 py::print("%d%%\n", i * 100 / (*protein_index).size());
                 // Import sys module from Python
-                py::module sys = py::module::import("sys");
-                // Access sys.stdout and call flush method
-                sys.attr("stdout").attr("flush")();
+                // py::module sys = py::module::import("sys");
+                // // Access sys.stdout and call flush method
+                // sys.attr("stdout").attr("flush")();
                 thres_display = i + (*protein_index).size() / 20;
             }
 
