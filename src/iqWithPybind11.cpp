@@ -1658,6 +1658,7 @@ py::dict iq_MaxLFQ(py::dict list) {
         samples = samples_vector.data();
         quants = quants_vector.data();
 
+        printf("Readed data list completed.\n");
     }
     catch (exception & e) {      
         printf("%s\n", e.what());
