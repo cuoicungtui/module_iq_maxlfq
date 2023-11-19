@@ -1666,9 +1666,10 @@ py::dict iq_MaxLFQ(py::dict list) {
         return (py::none());
     }
 
-    py:: dict result;
-    result["status"] = "Read data list success";
-    return (result);
+    // tested done
+    // py:: dict result;
+    // result["status"] = "Read data list success";
+    // return (result);
 
     size_t nrow = proteins_vector.size();
 
@@ -1729,6 +1730,10 @@ py::dict iq_MaxLFQ(py::dict list) {
             row_names[nr++] = i + 1;
         }
     }
+
+    py:: dict result;
+    result["status"] = "before Thead success";
+    return (result);
 
     size_t thres_display = 0;
 
