@@ -1684,7 +1684,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     int* col_names = new int[n_samples];
 
     // py::print("nrow = %llu, # proteins = %d , # samples = %d \n", nrow, n_proteins, n_samples);
-    py::print("nrow = {%llu}, # proteins = {%d}, # samples = {%d}", nrow, n_proteins, n_samples);
+    py::print("nrow = ",nrow, "# proteins = ",n_proteins," # samples = ", n_samples);
 
     //auto protein_index = new vector< vector<int> >(n_proteins);
     auto protein_index = new vector<vector<int>>(*(std::max_element(proteins, proteins + nrow)));  // allowing for missing proteins
