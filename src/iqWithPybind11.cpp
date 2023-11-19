@@ -1890,14 +1890,14 @@ py::dict iq_MaxLFQ(py::dict list) {
        return (py::none());
     }
 
+    py::print("Start write dict vec.\n");
+
     // estimate names
 
     // SEXP r_names = PROTECT(Rf_allocVector(STRSXP, n_proteins));
     // for (int i = 0; i < n_proteins; i++) {
     //     SET_STRING_ELT(r_names, i, Rf_mkChar(to_string(row_names[i]).c_str()));
     // }
-
-
 
 
     py::list r_names(n_proteins);
