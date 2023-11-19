@@ -1870,9 +1870,7 @@ py::dict iq_MaxLFQ(py::dict list) {
             }
         }
 
-        py:: dict result;
-        result["status"] = "thread in for  success";
-        return (result);
+        // DONE
     }
 
 
