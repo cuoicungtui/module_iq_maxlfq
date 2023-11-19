@@ -1751,11 +1751,11 @@ py::dict iq_MaxLFQ(py::dict list) {
     #endif
 
     // CHECK DONE
-    py:: dict result;
-    result["status"] = "_OPENMP success";
-    result["nrow"] = nrow;
-    result["n_proteins"] = (*protein_index).size();
-    return (result);
+    // py:: dict result;
+    // result["status"] = "_OPENMP success";
+    // result["nrow"] = nrow;
+    // result["n_proteins"] = (*protein_index).size();
+    // return (result);
 
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < (*protein_index).size(); i++) {
@@ -1845,7 +1845,15 @@ py::dict iq_MaxLFQ(py::dict list) {
                 #pragma omp flush(stop_sig)
             }
         }
+
+
+
     }
+
+    // CHECK DONE
+    py:: dict result;
+    result["status"] = "pragma success";
+    return (result);
 
     if (stop_sig) {
         printf("Canceled.\n");
