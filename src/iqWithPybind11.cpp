@@ -534,7 +534,7 @@ void process(const vector<string> &argv,
 
     if (show_header) {
         for (size_t i = 0; i < n_tab_pos; i++) {
-            printf("%s\n", line + tab_pos[i]);
+            py::print("%s\n", line + tab_pos[i]);
         }
         //--- finish reading
         fclose(fp);
@@ -549,63 +549,63 @@ void process(const vector<string> &argv,
     }
 
     // display command
-    printf("\nCommand: ");
+    py::print("\nCommand: ");
     for (size_t i = 0; i < argv.size(); i++) {
-        printf("%s ", argv[i].c_str());
+        py::print("%s ", argv[i].c_str());
     }
-    printf("\n\nSample column:\n    %s\n", col_sample);
-    printf("Protein column:\n    %s\n", col_primary_id);
-    printf("Ion column(s):\n   ");
+    py::print("\n\nSample column:\n    %s\n", col_sample);
+    py::print("Protein column:\n    %s\n", col_primary_id);
+    py::print("Ion column(s):\n   ");
     for (auto str : col_secondary_ids) {
-        printf(" %s", str);
+        py::print(" %s", str);
     }
-    printf("\nQuant column:\n    %s\n", col_quant);
+    py::print("\nQuant column:\n    %s\n", col_quant);
     if (!col_annotations.empty()) {
-        printf("Annotation column(s):\n   ");
+        py::print("Annotation column(s):\n   ");
         for (auto str : col_annotations) {
-            printf(" %s", str);
+            py::print(" %s", str);
         }
-        printf("\n");
+        py::print("\n");
     }
 
     if (!filter_string_equal.empty()) {
-        printf("String equal filter(s):\n");
+        py::print("String equal filter(s):\n");
         for (auto str : filter_string_equal) {
-            printf("    %s == %s\n", str.first, str.second);
+            py::print("    %s == %s\n", str.first, str.second);
         }
     }
 
     if (!filter_string_not_equal.empty()) {
-        printf("String not equal filter(s):\n");
+        py::print("String not equal filter(s):\n");
         for (auto str : filter_string_not_equal) {
-            printf("    %s != %s\n", str.first, str.second);
+            py::print("    %s != %s\n", str.first, str.second);
         }
     }
 
     if (!filter_double_less.empty()) {
-        printf("Double less filter(s):\n");
+        py::print("Double less filter(s):\n");
         for (auto str : filter_double_less) {
-            printf("    %s < %f\n", str.first, str.second);
+            py::print("    %s < %f\n", str.first, str.second);
         }
     }
 
     if (!filter_double_greater.empty()) {
-        printf("Double greater filter(s):\n");
+        py::print("Double greater filter(s):\n");
         for (auto str : filter_double_greater) {
-            printf("    %s > %f\n", str.first, str.second);
+            py::print("    %s > %f\n", str.first, str.second);
         }
     }
 
     if (intensity_col_sep) {
-        printf("Quant column separator:\n    %s\n", intensity_col_sep);
+        py::print("Quant column separator:\n    %s\n", intensity_col_sep);
     }
 
     if (na_string) {
-        printf("Quant column NA string (in addition to NaN):\n    %s\n", na_string);
+        py::print("Quant column NA string (in addition to NaN):\n    %s\n", na_string);
     }
 
     if (intensity_col_id) {
-        printf("Quant id column:\n    %s\n", intensity_col_id);
+        py::print("Quant id column:\n    %s\n", intensity_col_id);
     }
 
     //--- check header
@@ -813,9 +813,9 @@ void process(const vector<string> &argv,
         omp_set_dynamic(0);
         int no_threads = 4;
         omp_set_num_threads(no_threads);
-        printf("\nUsing %d  threads ...\n", no_threads);
+        py::print("\nUsing %d  threads ...\n", no_threads);
     #else
-        printf("Using a single CPU core ...\n");
+        py::print("Using a single CPU core ...\n");
     #endif
 
     auto double_buffers = new double_buffering_file_t(fp);
@@ -1034,15 +1034,15 @@ void process(const vector<string> &argv,
         }
 
         if (samples->size() >= print_threshold) {
-            printf("%llu  samples read\n", samples->size());
+            py::print("%llu  samples read\n", samples->size());
             print_threshold = samples->size() + 20;
         }
     }
-    printf("\n# lines read (excluding headers)      = %llu \n", line_no-1);
-    printf("# quantitative values after filtering = %llu \n\n", n_after_filtered);
+    py::print("\n# lines read (excluding headers)      = %llu \n", line_no-1);
+    py::print("# quantitative values after filtering = %llu \n\n", n_after_filtered);
 
-    printf("# samples  = %llu \n", samples->size());
-    printf("# proteins = %llu \n", annotation->size());
+    py::print("# samples  = %llu \n", samples->size());
+    py::print("# proteins = %llu \n", annotation->size());
 
     cleanup();
 }
@@ -1096,7 +1096,7 @@ py::dict iq_filter(py:: str cmd) {
     try {
         process(argv, protein_index, sample_index, ion_index, quant, annotation, col_annotation, samples, ions);
     } catch (exception & e) {
-        printf("%s\n", e.what());
+        py::print("%s\n", e.what());
 
         for (auto& a : (*ions)) {
             if (a) {
@@ -1653,7 +1653,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
     }
     catch (exception & e) {      
-        printf("%s\n", e.what());
+        py::print("%s\n", e.what());
         return (py::none());
     }
 
@@ -1680,7 +1680,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     int* row_names = new int[n_proteins];
     int* col_names = new int[n_samples];
 
-    printf("nrow = %llu, # proteins = %d , # samples = %d \n", nrow, n_proteins, n_samples);
+    py::print("nrow = %llu, # proteins = %d , # samples = %d \n", nrow, n_proteins, n_samples);
 
     //auto protein_index = new vector< vector<int> >(n_proteins);
     auto protein_index = new vector<vector<int>>(*(std::max_element(proteins, proteins + nrow)));  // allowing for missing proteins
@@ -1742,20 +1742,20 @@ py::dict iq_MaxLFQ(py::dict list) {
 
         omp_set_num_threads(no_threads);
 
-        printf("Using %d  threads...\n", no_threads);
+        py::print("Using %d  threads...\n", no_threads);
 
     #else
 
-        printf("Using a single CPU core...\n");
+        py::print("Using a single CPU core...\n");
 
     #endif
 
     // CHECK DONE
-    py:: dict result;
-    result["status"] = "_OPENMP success";
-    result["nrow"] = nrow;
-    result["n_proteins"] = (*protein_index).size();
-    return (result);
+    // py:: dict result;
+    // result["status"] = "_OPENMP success";
+    // result["nrow"] = nrow;
+    // result["n_proteins"] = (*protein_index).size();
+    // return (result);
 
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < (*protein_index).size(); i++) {
@@ -1834,7 +1834,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
         if (thread_id == 0) {
             if (i > thres_display) {
-                printf("%zu %%\n", i * 100 / (*protein_index).size());
+                py::print("%zu %%\n", i * 100 / (*protein_index).size());
                 // Import sys module from Python
                 py::module sys = py::module::import("sys");
 
@@ -1853,7 +1853,7 @@ py::dict iq_MaxLFQ(py::dict list) {
 
 
     if (stop_sig) {
-        printf("Canceled.\n");
+        py::print("Canceled.\n");
 
         // UNPROTECT(1);
 
@@ -1932,7 +1932,7 @@ py::dict iq_MaxLFQ(py::dict list) {
     vec["estimate"] = df;
     vec["annotation"] = ann;
 
-    printf("Completed.\n");
+    py::print("Completed.\n");
 
     // UNPROTECT(7);
 
