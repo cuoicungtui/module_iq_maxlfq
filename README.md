@@ -38,3 +38,13 @@ pip install ./module_iq_maxlfq.git
 
 With the `setup.py` file included in this example, the `pip install` command will
 invoke CMake and build the pybind11 module as specified in `CMakeLists.txt`.
+
+## Uninstall Module
+
+```bash
+pip uninstall iq-lfq-Pypi
+```
+
+## data 
+    DIA-report-long-format.txt
+    link: https://filesender.surf.nl/?s=download&token=8856b101-0bb7-4dd4-8ebb-a734788229ec

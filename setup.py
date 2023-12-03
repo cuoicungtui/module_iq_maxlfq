@@ -128,6 +128,13 @@ class CMakeBuild(build_ext):
 setup(
     name="iq_lfq_Pypi",
     version="0.0.1",
+    install_requires=[
+        'numpy>=1.0.0',
+        'pandas>=1.0.0',
+        'pyarrow>=1.0.0',
+        'matplotlib>=3.0.0',
+        # Add more dependencies as needed
+    ],
     author="Dean Moldovan",
     author_email="dean0x7d@gmail.com",
     description="A test project using pybind11 and CMake",
