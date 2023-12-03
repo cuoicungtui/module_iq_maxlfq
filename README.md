@@ -17,7 +17,7 @@ cmake --version
 ```
 => success
 
-## SETUP Visual Studio >=20117
+## SETUP Visual Studio >=2017
 
 * download Visual Studio https://visualstudio.microsoft.com/downloads/
 * Install Visual Studio
