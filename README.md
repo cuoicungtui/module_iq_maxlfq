@@ -33,7 +33,7 @@ needed for the pybind11 submodule:
 
 ```bash
 git clone --recursive https://github.com/cuoicungtui/module_iq_maxlfq.git
-pip install ./module_iq_maxlfq.git
+pip install ./module_iq_maxlfq
 ```
 
 With the `setup.py` file included in this example, the `pip install` command will
